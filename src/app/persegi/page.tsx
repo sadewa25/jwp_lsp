@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { formulaPersegi } from "../utils/utils";
 
 type Row = {
   id: string;
@@ -16,6 +17,7 @@ export default function Persegi() {
   const [rows, setRows] = useState<Row[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Call the endpoint GET for fetch the data from .csv
   async function fetchRows(): Promise<Row[]> {
     try {
       const res = await fetch("/api/persegi", { cache: "no-store" });
@@ -34,6 +36,7 @@ export default function Persegi() {
     }
   }
 
+  // Call when page is load
   useEffect(() => {
     let isMounted = true;
 
@@ -57,12 +60,17 @@ export default function Persegi() {
 
     try {
       setIsLoading(true);
+
+      const hasil = formulaPersegi({
+        sisi: sisi,
+      });
+
       const res = await fetch("/api/persegi", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ sisi }),
+        body: JSON.stringify({ sisi, hasil }),
       });
 
       if (!res.ok) {
@@ -79,6 +87,7 @@ export default function Persegi() {
       alert("Berhasil menyimpan data luas persegi.");
       const updatedRows = await fetchRows();
       setRows(updatedRows);
+      setSisi(0);
       setIsLoading(false);
     } catch (error) {
       console.error("Gagal menyimpan ke CSV", error);
@@ -91,9 +100,7 @@ export default function Persegi() {
     <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <header className="space-y-2">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Hitung Luas Persegi
-          </h1>
+          <h1 className="text-4xl font-semibold">Hitung Luas Persegi</h1>
           <p className="text-sm text-slate-600">Luas persegi = sisi x sisi</p>
         </header>
 
@@ -153,10 +160,7 @@ export default function Persegi() {
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td
-                      className="py-6 text-center text-slate-500"
-                      colSpan={3}
-                    >
+                    <td className="py-6 text-center text-slate-500" colSpan={3}>
                       Belum ada data luas persegi.
                     </td>
                   </tr>

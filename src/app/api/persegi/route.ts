@@ -4,6 +4,7 @@ import path from "path";
 
 type Payload = {
   sisi: number;
+  hasil: number;
 };
 
 const csvPath = path.join(process.cwd(), "public", "persegi.csv");
@@ -33,7 +34,7 @@ export async function GET() {
         return item;
       });
 
-    return NextResponse.json({ rows: data }, { status: 200 });
+    return NextResponse.json({ rows: data.reverse() }, { status: 200 });
   } catch (error) {
     console.error("Failed to read persegi.csv", error);
     return NextResponse.json(
@@ -47,7 +48,13 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Payload;
 
-    if (typeof body.sisi !== "number" || Number.isNaN(body.sisi)) {
+    // validation
+    if (
+      typeof body.sisi !== "number" ||
+      Number.isNaN(body.sisi) ||
+      typeof body.hasil !== "number" ||
+      Number.isNaN(body.hasil)
+    ) {
       return NextResponse.json(
         { message: "Invalid payload, sisi must be a number." },
         { status: 400 },
@@ -55,8 +62,9 @@ export async function POST(request: Request) {
     }
 
     const sisi = body.sisi;
-    const hasil = sisi * sisi;
+    const hasil = body.hasil;
 
+    // sample: 2026-03-11T04:38:36.882Z
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
     const tanggal =
@@ -101,4 +109,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

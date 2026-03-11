@@ -11,7 +11,9 @@ type Row = {
 };
 
 export default function Page() {
+  // navigation path
   const router = useRouter();
+  // store the variable
   const [jarijari, setJarijari] = useState<number>();
   const [rows, setRows] = useState<Row[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
