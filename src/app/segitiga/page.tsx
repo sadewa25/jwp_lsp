@@ -1,13 +1,56 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+type Row = {
+  id: string;
+  alas: string;
+  tinggi: string;
+  hasil: string;
+  tanggaljam: string;
+};
 
 export default function Segitiga() {
   const router = useRouter();
   const [alas, setAlas] = useState<number>();
 
   const [tinggi, setTinggi] = useState<number>();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  async function fetchRows(): Promise<Row[]> {
+    try {
+      const res = await fetch("/api/segitiga", { cache: "no-store" });
+      if (!res.ok) {
+        console.error("Gagal mengambil data segitiga");
+        return [];
+      }
+      const data = await res.json();
+      if (data && Array.isArray(data.rows)) {
+        return data.rows as Row[];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching segitiga rows", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      const result = await fetchRows();
+      if (isMounted) {
+        setRows(result);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const onSubmitHandle = async () => {
     if (alas == undefined || tinggi == undefined) {
@@ -15,6 +58,7 @@ export default function Segitiga() {
       return;
     }
     try {
+      setIsLoading(true);
       const res = await fetch("/api/segitiga", {
         method: "POST",
         headers: {
@@ -30,13 +74,20 @@ export default function Segitiga() {
             ? data.message
             : "Gagal menyimpan data ke CSV.";
         alert(message);
+        setIsLoading(false);
         return;
       }
 
       alert("Berhasil menyimpan data luas segitiga.");
+      const updatedRows = await fetchRows();
+      setRows(updatedRows);
+      setAlas(0)
+      setTinggi(0)
+      setIsLoading(false);
     } catch (error) {
       console.error("Gagal menyimpan ke CSV", error);
       alert("Terjadi kesalahan saat menyimpan data.");
+      setIsLoading(false);
     }
   };
 
@@ -93,10 +144,11 @@ export default function Segitiga() {
             </button>
             <button
               type="button"
-              className="h-10 w-40 rounded-md bg-zinc-800 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
+              disabled={isLoading}
+              className="h-10 w-40 rounded-md bg-zinc-800 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
               onClick={onSubmitHandle}
             >
-              Kirim
+              {isLoading ? "Menyimpan..." : "Kirim"}
             </button>
           </div>
         </section>
@@ -123,18 +175,25 @@ export default function Segitiga() {
                 </tr>
               </thead>
               <tbody className="text-base text-zinc-800">
-                <tr>
-                  <td className="py-4">10</td>
-                  <td className="py-4">10</td>
-                  <td className="py-4 text-center">100</td>
-                  <td className="py-4 text-right">11-03-2026 09:56</td>
-                </tr>
-                <tr>
-                  <td className="py-4">10</td>
-                  <td className="py-4">8</td>
-                  <td className="py-4 text-center">80</td>
-                  <td className="py-4 text-right">11-03-2026 09:56</td>
-                </tr>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td
+                      className="py-6 text-center text-zinc-500"
+                      colSpan={4}
+                    >
+                      Belum ada data luas segitiga.
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row) => (
+                    <tr key={row.id}>
+                      <td className="py-4">{row.alas}</td>
+                      <td className="py-4">{row.tinggi}</td>
+                      <td className="py-4 text-center">{row.hasil}</td>
+                      <td className="py-4 text-right">{row.tanggaljam}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

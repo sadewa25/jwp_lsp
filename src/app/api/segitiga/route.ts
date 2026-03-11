@@ -9,6 +9,42 @@ type Payload = {
 
 const csvPath = path.join(process.cwd(), "public", "segitiga.csv");
 
+export async function GET() {
+  try {
+    let content: string;
+    try {
+      content = await fs.readFile(csvPath, "utf8");
+    } catch {
+      // If file does not exist yet, initialize with header and return empty list
+      content = "id,alas,tinggi,hasil,tanggaljam\n";
+      await fs.writeFile(csvPath, content, "utf8");
+    }
+
+    const lines = content.trim().split("\n");
+    const [header, ...rows] = lines;
+    const cols = header.split(",");
+
+    const data = rows
+      .filter((line) => line.trim().length > 0)
+      .map((line) => {
+        const parts = line.split(",");
+        const item: Record<string, string> = {};
+        cols.forEach((col, idx) => {
+          item[col] = parts[idx] ?? "";
+        });
+        return item;
+      });
+
+    return NextResponse.json({ rows: data }, { status: 200 });
+  } catch (error) {
+    console.error("Failed to read segitiga.csv", error);
+    return NextResponse.json(
+      { message: "Internal server error while reading CSV." },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Payload;
