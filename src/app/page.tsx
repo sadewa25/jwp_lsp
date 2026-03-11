@@ -1,4 +1,19 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
+/**
+ * On this page will show the some informations:
+ * a. Dashboard ->
+ *  1. Total Perhitungan 
+ *  2. Nilai Maksimum dan Minimum
+ *  3. Presentase total perhitungan
+ * b. Button for each bangun datar
+ */
+
 export default function Home() {
+  // for the navigation page
+  const router = useRouter();
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 pb-14 pt-10 sm:px-10 sm:pt-14">
@@ -96,18 +111,21 @@ export default function Home() {
             <button
               type="button"
               className="h-32 rounded-2xl bg-zinc-700 text-lg font-medium text-zinc-100 shadow-sm transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
+              onClick={() => router.push("/segitiga")}
             >
               Segitiga
             </button>
             <button
               type="button"
               className="h-32 rounded-2xl bg-zinc-700 text-lg font-medium text-zinc-100 shadow-sm transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
+              onClick={() => router.push("/persegi")}
             >
               Persegi
             </button>
             <button
               type="button"
               className="h-32 rounded-2xl bg-zinc-700 text-lg font-medium text-zinc-100 shadow-sm transition-colors hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2"
+              onClick={() => router.push("/lingkaran")}
             >
               Lingkaran
             </button>

@@ -1,3 +1,5 @@
+"use client"
+
 export default function Segitiga() {
   return (
     <div className="min-h-screen bg-white text-zinc-900">
