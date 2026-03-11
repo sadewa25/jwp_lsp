@@ -130,6 +130,19 @@ export default function Home() {
       isMounted = false;
     };
   }, []);
+
+  const grandTotal = totals.segitiga + totals.persegi + totals.lingkaran;
+  const pctSegitiga =
+    grandTotal > 0
+      ? ((totals.segitiga / grandTotal) * 100).toFixed(2)
+      : "0";
+  const pctPersegi =
+    grandTotal > 0 ? ((totals.persegi / grandTotal) * 100).toFixed(2) : "0";
+  const pctLingkaran =
+    grandTotal > 0
+      ? ((totals.lingkaran / grandTotal) * 100).toFixed(2)
+      : "0";
+
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 pb-14 pt-10 sm:px-10 sm:pt-14">
@@ -226,15 +239,21 @@ export default function Home() {
             <div className="mt-5 grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
               <div className="space-y-2">
                 <div className="text-base text-zinc-800">Segitiga</div>
-                <div className="text-xl font-semibold">30%</div>
+                <div className="text-xl font-semibold">
+                  {isLoadingTotals ? "-" : `${pctSegitiga}%`}
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="text-base text-zinc-800">Persegi</div>
-                <div className="text-xl font-semibold">20%</div>
+                <div className="text-xl font-semibold">
+                  {isLoadingTotals ? "-" : `${pctPersegi}%`}
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="text-base text-zinc-800">Lingkaran</div>
-                <div className="text-xl font-semibold">50%</div>
+                <div className="text-xl font-semibold">
+                  {isLoadingTotals ? "-" : `${pctLingkaran}%`}
+                </div>
               </div>
             </div>
           </div>
