@@ -1,11 +1,99 @@
-"use client"
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+type Row = {
+  id: string;
+  sisi: string;
+  hasil: string;
+  tanggaljam: string;
+};
 
 export default function Persegi() {
+  const router = useRouter();
+  const [sisi, setSisi] = useState<number>();
+  const [rows, setRows] = useState<Row[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  async function fetchRows(): Promise<Row[]> {
+    try {
+      const res = await fetch("/api/persegi", { cache: "no-store" });
+      if (!res.ok) {
+        console.error("Gagal mengambil data persegi");
+        return [];
+      }
+      const data = await res.json();
+      if (data && Array.isArray(data.rows)) {
+        return data.rows as Row[];
+      }
+      return [];
+    } catch (error) {
+      console.error("Error fetching persegi rows", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      const result = await fetchRows();
+      if (isMounted) {
+        setRows(result);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const onSubmitHandle = async () => {
+    if (sisi == undefined) {
+      alert("Input sisi kosong, mohon periksa kembali");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/persegi", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sisi }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const message =
+          data && typeof data.message === "string"
+            ? data.message
+            : "Gagal menyimpan data ke CSV.";
+        alert(message);
+        setIsLoading(false);
+        return;
+      }
+
+      alert("Berhasil menyimpan data luas persegi.");
+      const updatedRows = await fetchRows();
+      setRows(updatedRows);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Gagal menyimpan ke CSV", error);
+      alert("Terjadi kesalahan saat menyimpan data.");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <header className="space-y-2">
-          <h1 className="text-4xl font-semibold tracking-tight">Hitung Luas Persegi</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            Hitung Luas Persegi
+          </h1>
           <p className="text-sm text-slate-600">Luas persegi = sisi x sisi</p>
         </header>
 
@@ -14,6 +102,10 @@ export default function Persegi() {
             Sisi
           </label>
           <input
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              setSisi(Number(e.target.value));
+            }}
+            value={sisi?.toString()}
             id="sisi"
             name="sisi"
             inputMode="decimal"
@@ -25,14 +117,17 @@ export default function Persegi() {
             <button
               type="button"
               className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-red-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200"
+              onClick={() => router.back()}
             >
               Kembali
             </button>
             <button
               type="button"
-              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-slate-800 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200"
+              disabled={isLoading}
+              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-slate-800 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={onSubmitHandle}
             >
-              Kirim
+              {isLoading ? "Menyimpan..." : "Kirim"}
             </button>
           </div>
         </div>
@@ -56,16 +151,30 @@ export default function Persegi() {
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="py-4 text-sm text-slate-800">10</td>
-                  <td className="py-4 text-center text-sm text-slate-800">100</td>
-                  <td className="py-4 text-right text-sm text-slate-800">11-03-2026 09:56</td>
-                </tr>
-                <tr>
-                  <td className="py-4 text-sm text-slate-800">5</td>
-                  <td className="py-4 text-center text-sm text-slate-800">25</td>
-                  <td className="py-4 text-right text-sm text-slate-800">11-03-2026 09:56</td>
-                </tr>
+                {rows.length === 0 ? (
+                  <tr>
+                    <td
+                      className="py-6 text-center text-slate-500"
+                      colSpan={3}
+                    >
+                      Belum ada data luas persegi.
+                    </td>
+                  </tr>
+                ) : (
+                  rows.map((row) => (
+                    <tr key={row.id}>
+                      <td className="py-4 text-sm text-slate-800">
+                        {row.sisi}
+                      </td>
+                      <td className="py-4 text-center text-sm text-slate-800">
+                        {row.hasil}
+                      </td>
+                      <td className="py-4 text-right text-sm text-slate-800">
+                        {row.tanggaljam}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
