@@ -4,10 +4,10 @@ import path from "path";
 
 type Payload = {
   jarijari: number;
+  hasil: number;
 };
 
 const csvPath = path.join(process.cwd(), "public", "lingkaran.csv");
-const PHI = 3.14;
 
 export async function GET() {
   try {
@@ -34,7 +34,7 @@ export async function GET() {
         return item;
       });
 
-    return NextResponse.json({ rows: data }, { status: 200 });
+    return NextResponse.json({ rows: data.reverse() }, { status: 200 });
   } catch (error) {
     console.error("Failed to read lingkaran.csv", error);
     return NextResponse.json(
@@ -47,8 +47,13 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Payload;
-
-    if (typeof body.jarijari !== "number" || Number.isNaN(body.jarijari)) {
+    // Validation numeric value
+    if (
+      typeof body.jarijari !== "number" ||
+      Number.isNaN(body.jarijari) ||
+      typeof body.hasil !== "number" ||
+      Number.isNaN(body.hasil)
+    ) {
       return NextResponse.json(
         { message: "Invalid payload, jarijari must be a number." },
         { status: 400 },
@@ -56,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     const jarijari = body.jarijari;
-    const hasil = PHI * jarijari * jarijari;
+    const hasil = body.hasil;
 
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -102,4 +107,3 @@ export async function POST(request: Request) {
     );
   }
 }
-

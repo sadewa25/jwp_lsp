@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { formulaLingkaran } from "../utils/utils";
 
 type Row = {
   id: string;
@@ -59,12 +60,15 @@ export default function Page() {
 
     try {
       setIsLoading(true);
+      const hasil = formulaLingkaran({
+        jariJari: jarijari,
+      });
       const res = await fetch("/api/lingkaran", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ jarijari }),
+        body: JSON.stringify({ jarijari, hasil }),
       });
 
       if (!res.ok) {
@@ -81,6 +85,7 @@ export default function Page() {
       alert("Berhasil menyimpan data luas lingkaran.");
       const updatedRows = await fetchRows();
       setRows(updatedRows);
+      setJarijari(0);
       setIsLoading(false);
     } catch (error) {
       console.error("Gagal menyimpan ke CSV", error);
@@ -93,9 +98,7 @@ export default function Page() {
     <main className="min-h-screen bg-white text-slate-900">
       <div className="mx-auto w-full max-w-6xl px-6 py-12">
         <header className="space-y-2">
-          <h1 className="text-4xl font-semibold tracking-tight">
-            Hitung Luas Lingkaran
-          </h1>
+          <h1 className="text-4xl font-semibold">Hitung Luas Lingkaran</h1>
           <p className="text-sm text-slate-600">Luas lingkaran = phi x r x r</p>
         </header>
 
@@ -137,7 +140,7 @@ export default function Page() {
         <section className="mt-16">
           <h2 className="text-xl font-semibold">Daftar Luas Lingkaran</h2>
 
-          <div className="mt-4 overflow-x-auto">
+          <div className="mt-4">
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b border-slate-300">
@@ -155,10 +158,7 @@ export default function Page() {
               <tbody>
                 {rows.length === 0 ? (
                   <tr>
-                    <td
-                      className="py-6 text-center text-slate-500"
-                      colSpan={3}
-                    >
+                    <td className="py-6 text-center text-slate-500" colSpan={3}>
                       Belum ada data luas lingkaran.
                     </td>
                   </tr>

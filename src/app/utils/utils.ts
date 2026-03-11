@@ -11,3 +11,7 @@ export const formulaSegitiga = ({
 export const formulaPersegi = ({ sisi }: { sisi: number }) => {
   return sisi * sisi;
 };
+
+export const formulaLingkaran = ({ jariJari }: { jariJari: number }) => {
+  return 3.14 * jariJari * jariJari;
+};
