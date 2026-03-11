@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 /**
  * On this page will show the some informations:
  * a. Dashboard ->
- *  1. Total Perhitungan 
+ *  1. Total Perhitungan
  *  2. Nilai Maksimum dan Minimum
  *  3. Presentase total perhitungan
  * b. Button for each bangun datar
@@ -15,17 +15,20 @@ import { useEffect, useState } from "react";
 export default function Home() {
   // for the navigation page
   const router = useRouter();
+  // total on each bangun datar
   const [totals, setTotals] = useState({
     segitiga: 0,
     persegi: 0,
     lingkaran: 0,
   });
   const [isLoadingTotals, setIsLoadingTotals] = useState(true);
+  // variable max values
   const [maxValues, setMaxValues] = useState({
     segitiga: 0,
     persegi: 0,
     lingkaran: 0,
   });
+  // variable min values
   const [minValues, setMinValues] = useState({
     segitiga: 0,
     persegi: 0,
@@ -33,16 +36,40 @@ export default function Home() {
   });
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
+  // fetch the information from the csv
   async function fetchTotal(url: string): Promise<number> {
     try {
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return 0;
+      /**
+       * The output json
+       * {
+          "rows": [
+              {
+                  "id": "1",
+                  "jarijari": "20",
+                  "hasil": "1256",
+                  "tanggaljam": "11-03-2026 11:16"
+              },
+              {
+                  "id": "2",
+                  "jarijari": "7",
+                  "hasil": "153.86",
+                  "tanggaljam": "11-03-2026 11:16"
+              }
+            ]
+          }
+       */
       const data = await res.json();
       if (!data || !Array.isArray(data.rows)) return 0;
-      const total = data.rows.reduce((sum: number, row: { hasil?: unknown }) => {
-        const n = Number((row as { hasil?: unknown }).hasil);
-        return Number.isFinite(n) ? sum + n : sum;
-      }, 0);
+      // looping and accumulate into one single value
+      const total = data.rows.reduce(
+        (sum: number, row: { hasil?: unknown }) => {
+          const n = Number((row as { hasil?: unknown }).hasil);
+          return Number.isFinite(n) ? sum + n : sum;
+        },
+        0,
+      );
       // Keep only two digits after the decimal point
       return Number(total.toFixed(2));
     } catch {
@@ -71,10 +98,11 @@ export default function Home() {
         if (n < min) min = n;
       }
 
+      // Keep the value is numeric value
       if (!Number.isFinite(max) || !Number.isFinite(min)) {
         return null;
       }
-
+      // match the value into two digits
       return {
         max: Number(max.toFixed(2)),
         min: Number(min.toFixed(2)),
@@ -84,7 +112,9 @@ export default function Home() {
     }
   }
 
+  // Call when the browsers first load
   useEffect(() => {
+    // prevent state updates after unmount
     let isMounted = true;
 
     (async () => {
@@ -133,21 +163,17 @@ export default function Home() {
 
   const grandTotal = totals.segitiga + totals.persegi + totals.lingkaran;
   const pctSegitiga =
-    grandTotal > 0
-      ? ((totals.segitiga / grandTotal) * 100).toFixed(2)
-      : "0";
+    grandTotal > 0 ? ((totals.segitiga / grandTotal) * 100).toFixed(2) : "0";
   const pctPersegi =
     grandTotal > 0 ? ((totals.persegi / grandTotal) * 100).toFixed(2) : "0";
   const pctLingkaran =
-    grandTotal > 0
-      ? ((totals.lingkaran / grandTotal) * 100).toFixed(2)
-      : "0";
+    grandTotal > 0 ? ((totals.lingkaran / grandTotal) * 100).toFixed(2) : "0";
 
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 pb-14 pt-10 sm:px-10 sm:pt-14">
         <header className="text-center">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="text-3xl font-semibold sm:text-4xl">
             Selamat Datang di Hitung Bangun Datar
           </h1>
           <p className="mt-2 text-base text-zinc-600 sm:text-lg">

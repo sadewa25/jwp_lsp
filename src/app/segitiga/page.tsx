@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { formulaSegitiga } from "../utils/utils";
 
 type Row = {
   id: string;
@@ -12,13 +13,16 @@ type Row = {
 };
 
 export default function Segitiga() {
+  // for navigation page
   const router = useRouter();
+  // store the variable
   const [alas, setAlas] = useState<number>();
-
   const [tinggi, setTinggi] = useState<number>();
+  // show the rows on the table
   const [rows, setRows] = useState<Row[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // read data into the folder api to read the csv files
   async function fetchRows(): Promise<Row[]> {
     try {
       const res = await fetch("/api/segitiga", { cache: "no-store" });
@@ -59,12 +63,18 @@ export default function Segitiga() {
     }
     try {
       setIsLoading(true);
+      // calculate formula
+      const hasil = formulaSegitiga({
+        alas: alas,
+        tinggi: tinggi,
+      });
+
       const res = await fetch("/api/segitiga", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ alas, tinggi }),
+        body: JSON.stringify({ alas, tinggi, hasil }),
       });
 
       if (!res.ok) {
@@ -81,8 +91,8 @@ export default function Segitiga() {
       alert("Berhasil menyimpan data luas segitiga.");
       const updatedRows = await fetchRows();
       setRows(updatedRows);
-      setAlas(0)
-      setTinggi(0)
+      setAlas(0);
+      setTinggi(0);
       setIsLoading(false);
     } catch (error) {
       console.error("Gagal menyimpan ke CSV", error);
@@ -177,10 +187,7 @@ export default function Segitiga() {
               <tbody className="text-base text-zinc-800">
                 {rows.length === 0 ? (
                   <tr>
-                    <td
-                      className="py-6 text-center text-zinc-500"
-                      colSpan={4}
-                    >
+                    <td className="py-6 text-center text-zinc-500" colSpan={4}>
                       Belum ada data luas segitiga.
                     </td>
                   </tr>

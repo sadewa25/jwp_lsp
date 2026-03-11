@@ -5,6 +5,7 @@ import path from "path";
 type Payload = {
   alas: number;
   tinggi: number;
+  hasil: number;
 };
 
 const csvPath = path.join(process.cwd(), "public", "segitiga.csv");
@@ -22,7 +23,42 @@ export async function GET() {
 
     const lines = content.trim().split("\n");
     const [header, ...rows] = lines;
+    // sample: [ 'id', 'alas', 'tinggi', 'hasil', 'tanggaljam' ]
     const cols = header.split(",");
+
+    /**
+     * 
+     data: [
+        {
+          id: '1',
+          alas: '10',
+          tinggi: '10',
+          hasil: '50',
+          tanggaljam: '11-03-2026 11:00'
+        },
+        {
+          id: '2',
+          alas: '20',
+          tinggi: '10',
+          hasil: '100',
+          tanggaljam: '11-03-2026 11:02'
+        },
+        {
+          id: '3',
+          alas: '10',
+          tinggi: '30',
+          hasil: '150',
+          tanggaljam: '11-03-2026 11:02'
+        },
+        {
+          id: '4',
+          alas: '10',
+          tinggi: '30',
+          hasil: '150',
+          tanggaljam: '11-03-2026 11:03'
+        }
+      ]
+     */
 
     const data = rows
       .filter((line) => line.trim().length > 0)
@@ -35,7 +71,7 @@ export async function GET() {
         return item;
       });
 
-    return NextResponse.json({ rows: data }, { status: 200 });
+    return NextResponse.json({ rows: data.reverse() }, { status: 200 });
   } catch (error) {
     console.error("Failed to read segitiga.csv", error);
     return NextResponse.json(
@@ -48,12 +84,14 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Payload;
-
+    // Validation numeric value
     if (
       typeof body.alas !== "number" ||
       Number.isNaN(body.alas) ||
       typeof body.tinggi !== "number" ||
-      Number.isNaN(body.tinggi)
+      Number.isNaN(body.tinggi) ||
+      typeof body.hasil !== "number" ||
+      Number.isNaN(body.hasil)
     ) {
       return NextResponse.json(
         { message: "Invalid payload, alas and tinggi must be numbers." },
@@ -61,11 +99,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // formula for calculation
     const alas = body.alas;
     const tinggi = body.tinggi;
-    const hasil = 0.5 * alas * tinggi;
+    const hasil = body.hasil;
 
+    // sample: 2026-03-11T04:38:36.882Z
     const now = new Date();
+
     const pad = (n: number) => String(n).padStart(2, "0");
     const tanggal =
       `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()} ` +
@@ -111,4 +152,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
