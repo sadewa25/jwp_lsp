@@ -21,6 +21,17 @@ export default function Home() {
     lingkaran: 0,
   });
   const [isLoadingTotals, setIsLoadingTotals] = useState(true);
+  const [maxValues, setMaxValues] = useState({
+    segitiga: 0,
+    persegi: 0,
+    lingkaran: 0,
+  });
+  const [minValues, setMinValues] = useState({
+    segitiga: 0,
+    persegi: 0,
+    lingkaran: 0,
+  });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   async function fetchTotal(url: string): Promise<number> {
     try {
@@ -39,19 +50,79 @@ export default function Home() {
     }
   }
 
+  async function fetchMaxMin(
+    url: string,
+  ): Promise<{ max: number; min: number } | null> {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data || !Array.isArray(data.rows) || data.rows.length === 0) {
+        return null;
+      }
+
+      let max = Number.NEGATIVE_INFINITY;
+      let min = Number.POSITIVE_INFINITY;
+
+      for (const row of data.rows as { hasil?: unknown }[]) {
+        const n = Number(row.hasil);
+        if (!Number.isFinite(n)) continue;
+        if (n > max) max = n;
+        if (n < min) min = n;
+      }
+
+      if (!Number.isFinite(max) || !Number.isFinite(min)) {
+        return null;
+      }
+
+      return {
+        max: Number(max.toFixed(2)),
+        min: Number(min.toFixed(2)),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   useEffect(() => {
     let isMounted = true;
 
     (async () => {
-      const [segitiga, persegi, lingkaran] = await Promise.all([
+      const [
+        segitigaTotal,
+        persegiTotal,
+        lingkaranTotal,
+        segitigaStats,
+        persegiStats,
+        lingkaranStats,
+      ] = await Promise.all([
         fetchTotal("/api/segitiga"),
         fetchTotal("/api/persegi"),
         fetchTotal("/api/lingkaran"),
+        fetchMaxMin("/api/segitiga"),
+        fetchMaxMin("/api/persegi"),
+        fetchMaxMin("/api/lingkaran"),
       ]);
 
       if (isMounted) {
-        setTotals({ segitiga, persegi, lingkaran });
+        setTotals({
+          segitiga: segitigaTotal,
+          persegi: persegiTotal,
+          lingkaran: lingkaranTotal,
+        });
         setIsLoadingTotals(false);
+
+        setMaxValues({
+          segitiga: segitigaStats?.max ?? 0,
+          persegi: persegiStats?.max ?? 0,
+          lingkaran: lingkaranStats?.max ?? 0,
+        });
+        setMinValues({
+          segitiga: segitigaStats?.min ?? 0,
+          persegi: persegiStats?.min ?? 0,
+          lingkaran: lingkaranStats?.min ?? 0,
+        });
+        setIsLoadingStats(false);
       }
     })();
 
@@ -103,15 +174,21 @@ export default function Home() {
                 <div className="mt-5 grid grid-cols-1 gap-7 text-center sm:grid-cols-3">
                   <div className="space-y-2">
                     <div className="text-base text-zinc-800">Segitiga</div>
-                    <div className="text-xl font-semibold">100</div>
+                    <div className="text-xl font-semibold">
+                      {isLoadingStats ? "-" : maxValues.segitiga}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-base text-zinc-800">Persegi</div>
-                    <div className="text-xl font-semibold">78</div>
+                    <div className="text-xl font-semibold">
+                      {isLoadingStats ? "-" : maxValues.persegi}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-base text-zinc-800">Lingkaran</div>
-                    <div className="text-xl font-semibold">90</div>
+                    <div className="text-xl font-semibold">
+                      {isLoadingStats ? "-" : maxValues.lingkaran}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -121,15 +198,21 @@ export default function Home() {
                 <div className="mt-5 grid grid-cols-1 gap-7 text-center sm:grid-cols-3">
                   <div className="space-y-2">
                     <div className="text-base text-zinc-800">Segitiga</div>
-                    <div className="text-xl font-semibold">100</div>
+                    <div className="text-xl font-semibold">
+                      {isLoadingStats ? "-" : minValues.segitiga}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-base text-zinc-800">Persegi</div>
-                    <div className="text-xl font-semibold">78</div>
+                    <div className="text-xl font-semibold">
+                      {isLoadingStats ? "-" : minValues.persegi}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="text-base text-zinc-800">Lingkaran</div>
-                    <div className="text-xl font-semibold">90</div>
+                    <div className="text-xl font-semibold">
+                      {isLoadingStats ? "-" : minValues.lingkaran}
+                    </div>
                   </div>
                 </div>
               </div>
