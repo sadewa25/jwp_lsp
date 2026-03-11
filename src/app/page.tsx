@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 /**
  * On this page will show the some informations:
@@ -14,6 +15,50 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   // for the navigation page
   const router = useRouter();
+  const [totals, setTotals] = useState({
+    segitiga: 0,
+    persegi: 0,
+    lingkaran: 0,
+  });
+  const [isLoadingTotals, setIsLoadingTotals] = useState(true);
+
+  async function fetchTotal(url: string): Promise<number> {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) return 0;
+      const data = await res.json();
+      if (!data || !Array.isArray(data.rows)) return 0;
+      const total = data.rows.reduce((sum: number, row: { hasil?: unknown }) => {
+        const n = Number((row as { hasil?: unknown }).hasil);
+        return Number.isFinite(n) ? sum + n : sum;
+      }, 0);
+      // Keep only two digits after the decimal point
+      return Number(total.toFixed(2));
+    } catch {
+      return 0;
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+
+    (async () => {
+      const [segitiga, persegi, lingkaran] = await Promise.all([
+        fetchTotal("/api/segitiga"),
+        fetchTotal("/api/persegi"),
+        fetchTotal("/api/lingkaran"),
+      ]);
+
+      if (isMounted) {
+        setTotals({ segitiga, persegi, lingkaran });
+        setIsLoadingTotals(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       <main className="mx-auto flex w-full max-w-6xl flex-col items-center px-6 pb-14 pt-10 sm:px-10 sm:pt-14">
@@ -32,15 +77,21 @@ export default function Home() {
             <div className="mt-5 grid grid-cols-1 gap-8 text-center sm:grid-cols-3">
               <div className="space-y-2">
                 <div className="text-base text-zinc-800">Segitiga</div>
-                <div className="text-xl font-semibold">100</div>
+                <div className="text-xl font-semibold">
+                  {isLoadingTotals ? "-" : totals.segitiga}
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="text-base text-zinc-800">Persegi</div>
-                <div className="text-xl font-semibold">78</div>
+                <div className="text-xl font-semibold">
+                  {isLoadingTotals ? "-" : totals.persegi}
+                </div>
               </div>
               <div className="space-y-2">
                 <div className="text-base text-zinc-800">Lingkaran</div>
-                <div className="text-xl font-semibold">90</div>
+                <div className="text-xl font-semibold">
+                  {isLoadingTotals ? "-" : totals.lingkaran}
+                </div>
               </div>
             </div>
           </div>
