@@ -46,16 +46,16 @@ export default function Home() {
        * {
           "rows": [
               {
-                  "id": "1",
-                  "jarijari": "20",
-                  "hasil": "1256",
-                  "tanggaljam": "11-03-2026 11:16"
+                "id": "1",
+                "jarijari": "20",
+                "hasil": "1256",
+                "tanggaljam": "11-03-2026 11:16"
               },
               {
-                  "id": "2",
-                  "jarijari": "7",
-                  "hasil": "153.86",
-                  "tanggaljam": "11-03-2026 11:16"
+                "id": "2",
+                "jarijari": "7",
+                "hasil": "153.86",
+                "tanggaljam": "11-03-2026 11:16"
               }
             ]
           }

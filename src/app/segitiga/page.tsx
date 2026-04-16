@@ -61,6 +61,19 @@ export default function Segitiga() {
       alert("Terdapat inputan yang kosong, mohon periksa kembali");
       return;
     }
+
+    if (alas < 0 || tinggi < 0) {
+      alert(
+        "Input alas atau tinggi tidak boleh negatif, mohon periksa kembali",
+      );
+      return;
+    }
+
+    if (alas == 0 || tinggi == 0) {
+      alert("Input alas atau tinggi tidak boleh nol, mohon periksa kembali");
+      return;
+    }
+
     try {
       setIsLoading(true);
       // calculate formula
@@ -118,8 +131,7 @@ export default function Segitiga() {
             <fieldset className="rounded-lg border border-zinc-300 px-3 pb-2">
               <legend className="px-2 text-sm text-zinc-600">Alas</legend>
               <input
-                type="number"
-                inputMode="numeric"
+                inputMode="decimal"
                 placeholder="Silahkan masukkan alas"
                 value={alas?.toString()}
                 className="h-10 w-full bg-transparent px-2 text-base outline-none"
@@ -132,8 +144,7 @@ export default function Segitiga() {
             <fieldset className="rounded-lg border border-zinc-300 px-3 pb-2">
               <legend className="px-2 text-sm text-zinc-600">Tinggi</legend>
               <input
-                type="number"
-                inputMode="numeric"
+                inputMode="decimal"
                 placeholder="Silahkan masukkan tinggi"
                 value={tinggi?.toString()}
                 className="h-10 w-full bg-transparent px-2 text-base outline-none"
@@ -147,7 +158,7 @@ export default function Segitiga() {
           <div className="mt-12 flex flex-col items-center justify-center gap-5 sm:flex-row sm:gap-8">
             <button
               type="button"
-              className="h-10 w-40 rounded-md bg-red-600 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
+              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-white border-blue-500 border-2 px-6 text-sm font-semibold text-black shadow-sm transition hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-red-200"
               onClick={() => router.back()}
             >
               Kembali
@@ -155,7 +166,7 @@ export default function Segitiga() {
             <button
               type="button"
               disabled={isLoading}
-              className="h-10 w-40 rounded-md bg-zinc-800 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-blue-500 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
               onClick={onSubmitHandle}
             >
               {isLoading ? "Menyimpan..." : "Kirim"}

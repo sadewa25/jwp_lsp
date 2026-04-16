@@ -9,6 +9,37 @@ type Payload = {
 
 const csvPath = path.join(process.cwd(), "public", "persegi.csv");
 
+async function saveFile({
+  sisi, hasil, tanggal,
+}: {
+  sisi: number;
+  hasil: number;
+  tanggal: string;
+}){
+  let content: string;
+    try {
+      content = await fs.readFile(csvPath, "utf8");
+    } catch {
+      content = "id,sisi,hasil,tanggaljam\n";
+      await fs.writeFile(csvPath, content, "utf8");
+    }
+
+    const lines = content.trim().split("\n");
+    const lastLine = lines[lines.length - 1];
+    let nextId = 1;
+    if (lines.length > 1 && lastLine) {
+      const maybeId = Number(lastLine.split(",")[0]);
+      if (!Number.isNaN(maybeId) && maybeId >= 1) {
+        nextId = maybeId + 1;
+      }
+    }
+
+    const newLine = `\n${nextId},${sisi},${hasil},${tanggal}`;
+    await fs.appendFile(csvPath, newLine, "utf8");
+
+    return nextId;
+}
+
 export async function GET() {
   try {
     let content: string;
@@ -71,26 +102,7 @@ export async function POST(request: Request) {
       `${pad(now.getDate())}-${pad(now.getMonth() + 1)}-${now.getFullYear()} ` +
       `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
-    let content: string;
-    try {
-      content = await fs.readFile(csvPath, "utf8");
-    } catch {
-      content = "id,sisi,hasil,tanggaljam\n";
-      await fs.writeFile(csvPath, content, "utf8");
-    }
-
-    const lines = content.trim().split("\n");
-    const lastLine = lines[lines.length - 1];
-    let nextId = 1;
-    if (lines.length > 1 && lastLine) {
-      const maybeId = Number(lastLine.split(",")[0]);
-      if (!Number.isNaN(maybeId) && maybeId >= 1) {
-        nextId = maybeId + 1;
-      }
-    }
-
-    const newLine = `\n${nextId},${sisi},${hasil},${tanggal}`;
-    await fs.appendFile(csvPath, newLine, "utf8");
+    const nextId = await saveFile({ sisi, hasil, tanggal });
 
     return NextResponse.json(
       {

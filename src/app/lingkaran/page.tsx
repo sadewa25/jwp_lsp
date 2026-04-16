@@ -58,6 +58,16 @@ export default function Page() {
       return;
     }
 
+    if (jarijari < 0) {
+      alert("Input jari-jari tidak boleh negatif, mohon periksa kembali");
+      return;
+    }
+
+    if (jarijari == 0) {
+      alert("Input jari-jari tidak boleh nol, mohon periksa kembali");
+      return;
+    }
+
     try {
       setIsLoading(true);
       const hasil = formulaLingkaran({
@@ -121,7 +131,7 @@ export default function Page() {
           <div className="mt-8 flex items-center justify-center gap-6">
             <button
               type="button"
-              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-red-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200"
+              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-white border-blue-500 border-2 px-6 text-sm font-semibold text-black shadow-sm transition hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-red-200"
               onClick={() => router.back()}
             >
               Kembali
@@ -129,7 +139,7 @@ export default function Page() {
             <button
               type="button"
               disabled={isLoading}
-              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-slate-800 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-11 w-44 items-center justify-center rounded-lg bg-blue-500 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
               onClick={onSubmitHandle}
             >
               {isLoading ? "Menyimpan..." : "Kirim"}

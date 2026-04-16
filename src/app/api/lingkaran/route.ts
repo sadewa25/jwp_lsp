@@ -12,6 +12,7 @@ const csvPath = path.join(process.cwd(), "public", "lingkaran.csv");
 export async function GET() {
   try {
     let content: string;
+    
     try {
       content = await fs.readFile(csvPath, "utf8");
     } catch {
